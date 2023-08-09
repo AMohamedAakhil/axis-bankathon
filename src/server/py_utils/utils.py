@@ -48,7 +48,6 @@ def job_desc_score(job_title, job_description):
         
         chain = LLMChain(llm=llm, prompt=prompt )
         ret  = chain.run(job_title = job_title, job_description= job_description)
-        print("stuff:", ret)
         return ret
 
 
