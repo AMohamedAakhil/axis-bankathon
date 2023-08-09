@@ -13,7 +13,7 @@ export async function GetData(collection: string, limit: number = 30) {
 export async function InsertData(collection: string, data: any) {
     const { db } = await connectToDatabase();
     const coll = await db.collection(collection);
-    const results = await coll.insertMany(data);
+    const results = await coll.insertOne(data);
     return results;
 }
 
