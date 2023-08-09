@@ -2,13 +2,16 @@
 
 import { connectToDatabase } from "./mongo"
 import { ObjectId } from "mongodb";
+import { currentUser } from "@clerk/nextjs";
 
 export async function GetData(collection: string, limit: number = 30) {
+    const user = await currentUser();
     const { db } = await connectToDatabase();
     const coll = await db.collection(collection);
-    const results = await coll.find({}).limit(limit).toArray();
+    const results = await coll.find({ 'user.id': user!.id }).limit(limit).toArray();
     return results;
 }
+
 
 export async function InsertData(collection: string, data: any) {
     const { db } = await connectToDatabase();

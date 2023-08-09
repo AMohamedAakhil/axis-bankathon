@@ -19,7 +19,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
     <html lang="en">
-      <body className={inter.className + " bg-slate-900 text-white"}>
+      <body className={inter.className + " bg-black text-white"}>
         <Navbar />
         {children}
       </body>

@@ -1,3 +1,4 @@
+import JobTable from "@/components/JobTable";
 import { GetData } from "@/server/utils"
 
 export default async function Home() {
@@ -6,6 +7,9 @@ export default async function Home() {
   return (
     <main className="p-5">
       <h1 className="text-xl">Dashboard</h1>
+      <div className="mt-5">
+      <JobTable />
+      </div>
     </main>
   )
 }
