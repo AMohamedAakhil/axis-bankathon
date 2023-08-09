@@ -5,10 +5,12 @@ import "@uploadthing/react/styles.css";
 
 const Add = () => {
   return (
-    <div className="mt-8 p-5">
-        <h1 className="text-2xl">Add new person</h1>
-        <h1>Upload CV: </h1>
+    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2    ">
+      <div className="w-full">
+      <h1 className="text-2xl">Add new resume</h1>
         <Upload />
+      </div>
+   
     </div>
   )
 }
