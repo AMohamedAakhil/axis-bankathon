@@ -1,4 +1,5 @@
 import fastapi
+import uvicorn
 from utils import job_desc_score
 
 app = fastapi.FastAPI()
@@ -10,4 +11,4 @@ async def job_desc_score_endpoint(job_title: str, job_description: str):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8000)
