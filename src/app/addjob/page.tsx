@@ -13,7 +13,7 @@ const AddJob = () => {
         const title = formData.get("title")
         const description = formData.get("description")
         const response = {title: title, description: description, user: user}
-        const res = await InsertData("jobs", JSON.parse(JSON.parse(JSON.stringify(response))))
+        const res = await InsertData("jobs", response)
         console.log(res)
         redirect('/')
     }
