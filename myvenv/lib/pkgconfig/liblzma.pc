@@ -1,0 +1,19 @@
+#
+# Author: Lasse Collin
+#
+# This file has been put into the public domain.
+# You can do whatever you want with this file.
+#
+
+prefix=/Users/faizrahim/axis-bankathon/myvenv
+exec_prefix=/Users/faizrahim/axis-bankathon/myvenv
+libdir=/Users/faizrahim/axis-bankathon/myvenv/lib
+includedir=/Users/faizrahim/axis-bankathon/myvenv/include
+
+Name: liblzma
+Description: General purpose data compression library
+URL: https://tukaani.org/xz/
+Version: 5.4.2
+Cflags: -I${includedir}
+Libs: -L${libdir} -llzma
+Libs.private: -pthread -lpthread
