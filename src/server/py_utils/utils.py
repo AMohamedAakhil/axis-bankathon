@@ -39,10 +39,11 @@ def job_desc_score(job_title, job_description):
                             Based on the job title: {job_title}
                             Score this job description out of 100:
                             '{job_description} '.
-
-                            Return a list where the first element is just the score out of 100 and the second element is a string which contains the potential enhancements of the description provided
-
-
+                            A Job description is supposed to consist of these : 
+                            Classification, Salary grade, Reports to, Date, Summary/objective, Essential functions, Competency, Supervisory responsibilities, Work environment, Physical demands, Position type, Travel, Required education, Preferred education, Additional eligibility
+                            For each available point, you score it 10 points.
+                            
+                            ONLY Return a nicely formatted string where the first element is just the final score out of 100 and the second element is a string which contains the potential enhancements of the description provided. If there are no enhacements just mention it. 
                             """
                         )
         
