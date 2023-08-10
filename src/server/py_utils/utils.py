@@ -29,8 +29,6 @@ class ReadPDF:
     
 
 
-
-
 def job_desc_score(job_title, job_description):
         llm = OpenAI(temperature=0)
         prompt  = PromptTemplate(
@@ -52,9 +50,26 @@ def job_desc_score(job_title, job_description):
 
 
 
+def job_desc_score(job_title, job_description):
+        llm = OpenAI(temperature=0)
+        prompt  = PromptTemplate(
+                            input_variables= ['job_title', 'job_description'],
+                            template= """
+                            Based on the job title: {job_title}
+                            Score this job description out of 100:
+                            '{job_description} '.
+
+                            Return a list where the first element is just the score out of 100 and the second element is a string which contains the potential enhancements of the description provided
+
+
+                            """
+                        )
+        
+        chain = LLMChain(llm=llm, prompt=prompt )
+        ret  = chain.run(job_title = job_title, job_description= job_description)
+        return ret
         
 
-    
 
     
 
