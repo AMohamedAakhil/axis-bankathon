@@ -1,6 +1,6 @@
 import fastapi
 import uvicorn
-from utils import job_desc_score
+from utils import job_desc_score, cv_score
 
 app = fastapi.FastAPI()
 
@@ -12,7 +12,17 @@ async def job_desc_score_endpoint(data: dict):
     if job_title is None or job_description is None:
         return {"error": "Both job_title and job_description are required."}
     
+    
     result = job_desc_score(job_title, job_description)
+    return result
+
+@app.post("/job_desc_score/")
+async def cv_rank_endpoint(data: dict):
+    job_title = data.get('job_title')
+    list_cv_texts = data.get('list_cv_texts')
+    if job_title is None or list_cv_texts is None:
+        return {"error": "Both job_title and job_description are required."}
+    result = list_cv_texts(job_title, list_cv_texts)
     return result
 
 

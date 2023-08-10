@@ -28,6 +28,26 @@ class ReadPDF:
         return all_text
     
 
+def cv_score(list_cv_texts, job_title):
+        llm = OpenAI(temperature=0)
+        prompt  = PromptTemplate(
+                                input_variables= ['list_cv_texts','job_title'],
+                                template= """
+                                Based on the list of CVs given to you, compare them
+                                and rank the CVs on how suited they are for the given job title: {job_title}
+
+                                List of CVs:
+                                {list_cv_texts}
+
+
+                                """
+                            )
+            
+        chain = LLMChain(llm=llm, prompt=prompt )
+        ret  = chain.run(list_cv_texts=list_cv_texts, job_title= job_title)
+        return ret
+     
+    
 
 def job_desc_score(job_title, job_description):
         llm = OpenAI(temperature=0)
@@ -73,5 +93,9 @@ def job_desc_score(job_title, job_description):
 
 
     
+def analyse_doc(data_str):
+     llm = OpenAI(temperature = 0)
+     prompt = PromptTemplate("""
 
+                             """)
 
