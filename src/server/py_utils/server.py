@@ -1,13 +1,20 @@
-import fastapi  
+import fastapi
+import uvicorn
 from utils import job_desc_score
 
 app = fastapi.FastAPI()
 
-@app.get("/job_desc_score")
-async def job_desc_score_endpoint(job_title: str, job_description: str):
-    """Score a job description and return a list with the score and potential enhancements."""
-    return eval(job_desc_score(job_title, job_description))
+@app.post("/job_desc_score/")
+async def job_desc_score_endpoint(data: dict):
+    job_title = data.get('job_title')
+    job_description = data.get('job_description')
+    print(job_title, job_description)
+    if job_title is None or job_description is None:
+        return {"error": "Both job_title and job_description are required."}
+    
+    result = job_desc_score(job_title, job_description)
+    return result
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8000)
