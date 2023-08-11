@@ -1,13 +1,12 @@
 from pypdf import PdfReader
 import requests
-from langchain.chains import LLMChain
+from langchain.chains import LLMChain, SequentialChain
 from langchain.llms import OpenAI
 from langchain.prompts import PromptTemplate
 import os
 
 
-os.environ["OPENAI_API_KEY"] = "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"
-
+os.environ["OPENAI_API_KEY"] = ""
 
 class ReadPDF:
     def __init__(self, url):
@@ -27,6 +26,72 @@ class ReadPDF:
             
         return all_text
     
+class JobDescLLM:
+     def __init__(self, job_title, job_description) -> None:
+          self.job_title = job_title
+          self.job_description = job_description
+          self.llm = OpenAI(temperature=0.2)
+     def build_chains(self):
+          prompt1 = """
+          Given a Job description for the Job title: {job_title},
+          Analyse the description and identify these elements:
+
+          Summary/objective, Essential functions,
+          Competency, Supervisory responsibilities, 
+          Work environment, Physical demands, 
+          Position type, Travel, Required education, 
+          Preferred education, Additional eligibility
+
+          Scan the description for the presence of each of these elements,
+          ONLY Return a dictionary where the key of dictionary is name of the element and
+          the value of this is 0 or 10. 
+          0 indicates the absence of the element and 10 indicates the presence.
+          -----
+          Job description :
+          {job_description}
+
+
+          Make sure to return only the raw dictionary, not code
+          """
+
+          prompt1_template = PromptTemplate(
+               input_variables=["job_title", "job_description"],
+               template= prompt1
+          )
+
+          chain1 = LLMChain(llm = self.llm, prompt=prompt1_template, 
+                            output_key="dictionary"
+                        )
+          
+          
+          prompt2_template = PromptTemplate(
+               input_variables=["dictionary"],
+               template = """
+              Given a dictionary, calculate the total sum of all the values, only return the sum
+              {dictionary}
+
+              make sure to return only the integer without any
+               """
+          )
+
+          chain2 = LLMChain(llm = self.llm, prompt= prompt2_template,
+                            output_key= "sum")
+          
+          overall_chain =SequentialChain(
+               chains = [chain1, chain2],
+               input_variables = ["job_title", "job_description"],
+               output_variables = ["dictionary", "sum"],
+               verbose = True
+
+          )
+
+          sum = overall_chain({"job_title": self.job_title,
+                  "job_description": self.job_description})
+          
+          return sum # output not parsed yet, to be done soon  
+          
+          
+    
 
 def cv_score(list_cv_texts, job_title):
         llm = OpenAI(temperature=0)
@@ -44,7 +109,7 @@ def cv_score(list_cv_texts, job_title):
                             )
             
         chain = LLMChain(llm=llm, prompt=prompt )
-        ret  = chain.run(list_cv_texts=list_cv_texts, job_title= job_title)
+        ret  = chain.run(list_cv_texts=list_cv_texts, job_title = job_title)
         return ret
      
     
@@ -71,6 +136,9 @@ def job_desc_score(job_title, job_description):
 
 
 
+
+
+
 def job_desc_score(job_title, job_description):
         llm = OpenAI(temperature=0)
         prompt  = PromptTemplate(
@@ -92,10 +160,4 @@ def job_desc_score(job_title, job_description):
         
 
 
-    
-def analyse_doc(data_str):
-     llm = OpenAI(temperature = 0)
-     prompt = PromptTemplate("""
-
-                             """)
 
