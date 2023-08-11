@@ -13,7 +13,7 @@ async function uploadFiles(formData: FormData) {
   const files: any = formData.getAll("files");
   const response = await utapi.uploadFiles(files)
   const dbres = {response, user: user}
-  InsertData("newertest", dbres)
+  InsertData("resume", dbres)
   console.log(dbres);
   redirect('/')
 }

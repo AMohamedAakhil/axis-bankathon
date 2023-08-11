@@ -10,6 +10,9 @@ const Navbar = () => {
         <div className="flex gap-8 items-center">
             <Link href="/add" className="text-gray-300">Add Resume</Link>
             <Link href="/addjob" className="text-gray-300">Add Job</Link>
+            <Link href="/evaluate/resume" className="text-gray-300">Evaluate Resume</Link>
+            <Link href="/evaluate/job" className="text-gray-300">Evaluate Job</Link>
+
             <UserButton afterSignOutUrl="/"/>
         </div>
     </div>

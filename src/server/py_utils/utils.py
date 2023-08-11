@@ -1,9 +1,19 @@
 from pypdf import PdfReader
+import os
 import requests
 from langchain.chains import LLMChain
 from langchain.llms import OpenAI
 from langchain.prompts import PromptTemplate
-import os
+from pydantic import BaseModel, Field
+from langchain.chat_models import ChatOpenAI
+from langchain.agents import Tool
+from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.vectorstores import FAISS
+from langchain.document_loaders import PyPDFLoader
+from langchain.chains import RetrievalQA
+from langchain.agents import initialize_agent
+from langchain.agents import AgentType
 
 
 os.environ["OPENAI_API_KEY"] = "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"
@@ -52,11 +62,22 @@ def job_desc_score(job_title, job_description):
         return ret
 
 
-
+def document_comparing(job_title, job_description):
+        llm = OpenAI(temperature=0)
+        prompt  = PromptTemplate(
+                            input_variables= ['job_title', 'job_description'],
+                            template= """
+                            Based on the job title: {job_title}
+                            Score this job description out of 100:
+                            '{job_description} '.
+                            A Job description is supposed to consist of these : 
+                            Classification, Salary grade, Reports to, Date, Summary/objective, Essential functions, Competency, Supervisory responsibilities, Work environment, Physical demands, Position type, Travel, Required education, Preferred education, Additional eligibility
+                            For each available point, you score it 10 points.
+                            
+                            ONLY Return a nicely formatted string where the first element is just the final score out of 100 and the second element is a string which contains the potential enhancements of the description provided. If there are no enhacements just mention it. 
+                            """
+                        )
         
-
-    
-
-    
-
-
+        chain = LLMChain(llm=llm, prompt=prompt )
+        ret  = chain.run(job_title = job_title, job_description= job_description)
+        return ret

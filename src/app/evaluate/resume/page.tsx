@@ -1,8 +1,15 @@
-import React from 'react'
+import { GetData } from "@/server/utils";
+import ResumeForm from "./form";
 
-const EvaluateResume = () => {
+
+const EvaluateResume = async () => {
+
+  const jobs = await GetData("jobs");
   return (
-    <div>EvaluateResume</div>
+    <div className="p-5">
+      <h1 className='text-2xl'>Evaluate Resume</h1>
+      <ResumeForm jobs={jobs} />
+    </div>
   )
 }
 
