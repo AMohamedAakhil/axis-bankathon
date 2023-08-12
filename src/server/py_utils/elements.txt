@@ -1,0 +1,21 @@
+1) Job Purpose:A concise overview of the role's purpose and 
+                primary responsibilities. 
+
+2)Key Responsibilities: A detailed list of tasks, duties, 
+                        and responsibilities that the employee will be expected to perform. 
+                        This provides clarity on what the role entails.
+
+3)Qualifications:This section lists the required level of job knowledge 
+              (such as education, experience, knowledge, skills, and abilities)
+               required to do the job. This section focuses on the “minimum” level 
+               of qualifications for an individual to be productive and successful 
+               in this role.
+
+4)Location:This field indicates where the job is based.
+
+5)Salary and Benefits:Compensation details and any offered benefit
+
+6)Reporting Structure: All the reporting relationships has to clarfied, 
+                      including who the employee will report to and who will report to them, 
+                      if applicable.
+

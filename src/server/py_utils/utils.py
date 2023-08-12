@@ -6,6 +6,8 @@ from langchain.prompts import PromptTemplate
 import os
 
 
+
+
 os.environ["OPENAI_API_KEY"] = ""
 
 class ReadPDF:
@@ -30,22 +32,22 @@ class JobDescLLM:
      def __init__(self, job_title, job_description) -> None:
           self.job_title = job_title
           self.job_description = job_description
-          self.llm = OpenAI(temperature=0.2)
+          self.llm = OpenAI(temperature=0.6)
+
+          with open("src/server/py_utils/elements.txt") as elements_file:
+               self.elements = elements_file.read()
+
      def build_chains(self):
           prompt1 = """
           Given a Job description for the Job title: {job_title},
           Analyse the description and identify these elements:
 
-          Summary/objective, Essential functions,
-          Competency, Supervisory responsibilities, 
-          Work environment, Physical demands, 
-          Position type, Travel, Required education, 
-          Preferred education, Additional eligibility
+         {elements}
 
-          Scan the description for the presence of each of these elements,
-          ONLY Return a dictionary where the key of dictionary is name of the element and
-          the value of this is 0 or 10. 
-          0 indicates the absence of the element and 10 indicates the presence.
+          Scan the description for the presence of each of these elements, Shorten the identified segment.
+          ONLY Return a dictionary where the key of dictionary is name of the name of the element and the value is the shortened segment.
+          If you can't identify the segment then just fill the value as None
+    
           -----
           Job description :
           {job_description}
@@ -55,7 +57,7 @@ class JobDescLLM:
           """
 
           prompt1_template = PromptTemplate(
-               input_variables=["job_title", "job_description"],
+               input_variables=["job_title" ,"job_description", "elements"],
                template= prompt1
           )
 
@@ -63,35 +65,89 @@ class JobDescLLM:
                             output_key="dictionary"
                         )
           
+
+          
+     
           
           prompt2_template = PromptTemplate(
-               input_variables=["dictionary"],
+               input_variables=["dictionary", "elements", "job_title"],
                template = """
-              Given a dictionary, calculate the total sum of all the values, only return the sum
-              {dictionary}
+              Your boss has written a job description to hire employees. You have been 
+              asked to evaluate the job description
 
-              make sure to return only the integer without any
+              Given a dictionary that contains these fields:
+              {elements}
+
+
+              Analyse The fields for the given job: {job_title} and give it a 
+              score on how well it has been written with regard to the job title.
+              This score has to be out of 10, You are allowed to use decimal values
+              Return ONLY a new dictionary that contains the name of the field and the score for that field.
+              ---
+              {dictionary}
                """
           )
 
+
           chain2 = LLMChain(llm = self.llm, prompt= prompt2_template,
+                            output_key= "score_dict")
+          
+          prompt3_template = PromptTemplate(
+               input_variables=["score_dict"],
+               template = """
+              Given a dictionary, calculate the total sum of all the values, only return the sum
+              {score_dict}
+
+              make sure to return only the integer without any text
+               """
+          )
+
+          chain3 = LLMChain(llm = self.llm, prompt= prompt3_template,
                             output_key= "sum")
+
+          
+
           
           overall_chain =SequentialChain(
-               chains = [chain1, chain2],
-               input_variables = ["job_title", "job_description"],
-               output_variables = ["dictionary", "sum"],
+               chains = [chain1, chain2, chain3],
+               input_variables = ["job_title", "job_description", "elements"],
+               output_variables = ["dictionary", "score_dict", "sum"],
                verbose = True
 
           )
 
           sum = overall_chain({"job_title": self.job_title,
-                  "job_description": self.job_description})
+                  "job_description": self.job_description,
+                  "elements": self.elements})
+
+
           
           return sum # output not parsed yet, to be done soon  
-          
-          
-    
+      
+jdl = JobDescLLM("Bank manager",
+                 """
+Job Summary:
+We're looking for someone to fill the role of Bank Manager. The Bank Manager will be responsible for whatever happens at the branch, including dealing with customers, telling employees what to do sometimes, and making sure things are okay, I guess.
+
+Responsibilities:
+
+Do stuff that a manager does, like managing things.
+Handle customers when they complain or something.
+Tell employees to do their job, maybe.
+Make sure the branch doesn't fall apart, hopefully.
+
+Qualifications:
+
+You need to have some sort of degree, I guess.
+Maybe a few years of experience in banking or something, but if not, it's fine.
+Just be good at talking to people, or whatever.
+You should probably know how to use a computer, but we won't provide training.
+Be okay with taking the blame if things go wrong, even if it's not your fault.
+""")
+print(jdl.build_chains())     
+
+
+
 
 def cv_score(list_cv_texts, job_title):
         llm = OpenAI(temperature=0)
@@ -114,50 +170,10 @@ def cv_score(list_cv_texts, job_title):
      
     
 
-def job_desc_score(job_title, job_description):
-        llm = OpenAI(temperature=0)
-        prompt  = PromptTemplate(
-                            input_variables= ['job_title', 'job_description'],
-                            template= """
-                            Based on the job title: {job_title}
-                            Score this job description out of 100:
-                            '{job_description} '.
-                            A Job description is supposed to consist of these : 
-                            Classification, Salary grade, Reports to, Date, Summary/objective, Essential functions, Competency, Supervisory responsibilities, Work environment, Physical demands, Position type, Travel, Required education, Preferred education, Additional eligibility
-                            For each available point, you score it 10 points.
-                            
-                            ONLY Return a nicely formatted string where the first element is just the final score out of 100 and the second element is a string which contains the potential enhancements of the description provided. If there are no enhacements just mention it. 
-                            """
-                        )
-        
-        chain = LLMChain(llm=llm, prompt=prompt )
-        ret  = chain.run(job_title = job_title, job_description= job_description)
-        return ret
 
 
 
 
-
-
-def job_desc_score(job_title, job_description):
-        llm = OpenAI(temperature=0)
-        prompt  = PromptTemplate(
-                            input_variables= ['job_title', 'job_description'],
-                            template= """
-                            Based on the job title: {job_title}
-                            Score this job description out of 100:
-                            '{job_description} '.
-
-                            Return a list where the first element is just the score out of 100 and the second element is a string which contains the potential enhancements of the description provided
-
-
-                            """
-                        )
-        
-        chain = LLMChain(llm=llm, prompt=prompt )
-        ret  = chain.run(job_title = job_title, job_description= job_description)
-        return ret
-        
 
 
 
