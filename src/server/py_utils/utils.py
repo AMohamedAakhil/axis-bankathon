@@ -14,6 +14,8 @@ from langchain.document_loaders import PyPDFLoader
 from langchain.chains import RetrievalQA
 from langchain.agents import initialize_agent
 from langchain.agents import AgentType
+import asyncio
+import json
 
 
 
@@ -44,30 +46,32 @@ class JobDescLLM:
           self.job_description = job_description
           self.llm = OpenAI(temperature=0.6)
 
-          with open("src/server/py_utils/elements.txt") as elements_file:
-               self.elements = elements_file.read()
+          with open("src/server/py_utils/elements.json") as elements_file:
+               self.elements = json.load(elements_file)
 
-     def build_chains(self):
+
+
+
+     async def build_dict(self):
           prompt1 = """
           Given a Job description for the Job title: {job_title},
-          Analyse the description and identify these elements:
+          Analyse the description and identify the following component:
 
-         {elements}
+         {field}: {field_info}
 
-          Scan the description for the presence of each of these elements, Shorten the identified segment.
-          ONLY Return a dictionary where the key of dictionary is name of the name of the element and the value is the shortened segment.
-          If you can't identify the segment then just fill the value as None
-    
+          Scan the description for the presence of this field, Identify the segment.
+          ONLY Return a json formatted string where the property name is {field} and value is the identied segment
+          If you cannot identify the segment, The value of the property should be null.
           -----
           Job description :
           {job_description}
 
 
-          Make sure to return only the raw dictionary, not code
+          Make sure to RETURN ONLY JSON, not code or any other text. 
           """
 
           prompt1_template = PromptTemplate(
-               input_variables=["job_title" ,"job_description", "elements"],
+               input_variables=["job_title" ,"job_description", "field", "field_info"],
                template= prompt1
           )
 
@@ -75,108 +79,130 @@ class JobDescLLM:
                             output_key="dictionary"
                         )
           
-
+          dict_chain = SequentialChain(
+               chains = [chain1],
+               input_variables = ["job_title", "job_description", "field", "field_info"],
+               output_variables = ["dictionary"],
+               verbose = False
+          )
           
+          tasks = []
+          for field in self.elements.keys():
+               field_info = self.elements[field]
+               inputs = {
+               "job_title": self.job_title,
+               "field": field,
+               "field_info": field_info,
+               "job_description": self.job_description
+               }
+
+               tasks.append(self.async_generate(dict_chain, inputs))
+          results = await asyncio.gather(*tasks)
+
+          elements_dict = {}
+          
+          for json_stuff in results:
+               temp_ = json.loads(json_stuff)
+               name_ = list(temp_.keys())[0]
+               
+               elements_dict[name_] = temp_[name_]
+          return elements_dict
+
      
+     async def async_generate(self, sqc, inputs):
+          resp = await sqc.arun(inputs)
+          return resp
+     
+     
+     async def generate_score_concurrently(self):
+
           
-          prompt2_template = PromptTemplate(
-               input_variables=["dictionary", "elements", "job_title"],
+          pt = PromptTemplate(
+               input_variables=["job_title", "field", "field_info", "field_val"],
                template = """
-              Your boss has written a job description to hire employees. You have been 
-              asked to evaluate the job description
+              Your company is recruting employees for the job, {job_title}. Your boss 
+              has written the {field} for this job, Your job is to evaluate on How 
+              well he has written it. See if the given {field} is actually relevant for 
+              the job and whether or not it accurately describes the {field} REQUIRED.
+              FOR SOMEBODY TO FUNCTION EFFECTIVELY AS A {job_title}. Based on this, Score the
+              {field} out of 10. If the field has been listed as null, give the score as 0
+              You are allowed to use decimal values, Return ONLY THE SCORE AND NO OTHER TEXT.
 
-              Given a dictionary that contains these fields:
-              {elements}
-
-
-              Analyse The fields for the given job: {job_title} and give it a 
-              score on how well it has been written with regard to the job title.
-              This score has to be out of 10, You are allowed to use decimal values
-              Return ONLY a new dictionary that contains the name of the field and the score for that field.
+              {field} = {field_info}. 
               ---
-              {dictionary}
-               """
+              This is what your boss has written:
+
+              {field_val}
+              ---
+              
+          """
+          )
+          chain = LLMChain(llm = self.llm,
+                           prompt=pt,
+                           output_key="score")
+          
+          sqc = SequentialChain(
+               chains = [chain],
+               input_variables = ["job_title", "field", "field_info", "field_val"],
+               output_variables = ["score"],
+               verbose = False
           )
 
+          elements_dict = await self.build_dict() 
+          #print("ELEM DICT:", elements_dict)
+          tasks = []
 
-          chain2 = LLMChain(llm = self.llm, prompt= prompt2_template,
-                            output_key= "score_dict")
+          for field in elements_dict.keys():
+               field_info = self.elements[field]
+               field_val = elements_dict[field]
+               inputs = {
+               "job_title": self.job_title,
+               "field": field,
+               "field_info": field_info,
+               "field_val": field_val
+               }
+
+               tasks.append(self.async_generate(sqc, inputs))
+
+          results = await asyncio.gather(*tasks)
+          sum_score = sum([float(i) for  i in results])
+          return sum_score
           
-          prompt3_template = PromptTemplate(
-               input_variables=["score_dict"],
-               template = """
-              Given a dictionary, calculate the total sum of all the values, only return the sum
-              {score_dict}
 
-              make sure to return only the integer without any text
-               """
-          )
-
-          chain3 = LLMChain(llm = self.llm, prompt= prompt3_template,
-                            output_key= "sum")
-
-          
-
-          
-          overall_chain =SequentialChain(
-               chains = [chain1, chain2, chain3],
-               input_variables = ["job_title", "job_description", "elements"],
-               output_variables = ["dictionary", "score_dict", "sum"],
-               verbose = True
-
-          )
-
-          sum = overall_chain({"job_title": self.job_title,
-                  "job_description": self.job_description,
-                  "elements": self.elements})
-
-
-          
-          return sum # output not parsed yet, to be done soon  
+ 
       
 jdl = JobDescLLM("Bank manager",
                  """
-Job Summary:
-We're looking for someone to fill the role of Bank Manager. The Bank Manager will be responsible for whatever happens at the branch, including dealing with customers, telling employees what to do sometimes, and making sure things are okay, I guess.
-
+We are seeking an experienced and dynamic individual to fill the role of Bank Manager at our reputable financial institution. The Bank Manager will be responsible for overseeing the daily operations of the branch, ensuring excellent customer service, managing a team of dedicated professionals, and achieving financial targets. The successful candidate will demonstrate strong leadership skills, a deep understanding of banking products and services, and the ability to foster a positive and collaborative work environment. 
 Responsibilities:
 
-Do stuff that a manager does, like managing things.
-Handle customers when they complain or something.
-Tell employees to do their job, maybe.
-Make sure the branch doesn't fall apart, hopefully.
+Lead, mentor, and motivate a team of banking professionals to provide exceptional customer service and meet performance goals.
+Manage branch operations, including transaction processing, account management, and compliance with regulatory guidelines.
+Develop and execute strategies to attract and retain customers while promoting a range of banking products and services.
+Collaborate with regional management to set and achieve branch-specific financial targets and operational objectives.
+Monitor and maintain compliance with industry regulations and internal policies to ensure a secure and efficient banking environment.
+Build and maintain strong relationships with customers, local businesses, and community organizations to enhance the bank's reputation and market presence.
+Analyze financial reports and market trends to make informed decisions that optimize branch performance and profitability.
+Implement training programs to enhance employee skills and knowledge, ensuring the delivery of accurate and up-to-date information to customers.
+Handle escalated customer inquiries and resolve complex issues in a timely and professional manner.
+Prepare and present regular reports on branch performance, operational metrics, and customer feedback to senior management.
 
 Qualifications:
 
-You need to have some sort of degree, I guess.
-Maybe a few years of experience in banking or something, but if not, it's fine.
-Just be good at talking to people, or whatever.
-You should probably know how to use a computer, but we won't provide training.
-Be okay with taking the blame if things go wrong, even if it's not your fault.
+Bachelor's degree in Finance, Business Administration, or related field (Master's degree preferred).
+Minimum of 5 years of progressive experience in banking, including roles in customer service, operations, and leadership.
+Strong understanding of financial products, regulations, and industry trends.
+Excellent interpersonal, communication, and leadership skills.
+Proven track record of achieving and exceeding financial targets.
+Ability to make informed decisions under pressure and adapt to a rapidly changing banking landscape.
+Proficiency in banking software and systems.
+Exceptional problem-solving and decision-making abilities.
+Strong commitment to ethical conduct and integrity.
+
 """)
-print(jdl.build_chains())     
+asyncio.run(jdl.generate_score_concurrently())   
 
 
-
-
-def cv_score(list_cv_texts, job_title):
-        llm = OpenAI(temperature=0)
-        prompt  = PromptTemplate(
-                                input_variables= ['list_cv_texts','job_title'],
-                                template= """
-                                Based on the list of CVs given to you, compare them
-                                and rank the CVs on how suited they are for the given job title: {job_title}
-
-                                List of CVs:
-                                {list_cv_texts}
-
-
-                                """
-                            )
-            
-        chain = LLMChain(llm=llm, prompt=prompt )
-        ret  = chain.run(list_cv_texts=list_cv_texts, job_title = job_title)
-        return ret
      
     
 
