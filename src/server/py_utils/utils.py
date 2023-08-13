@@ -21,7 +21,6 @@ import json
 
 
 os.environ["OPENAI_API_KEY"] = ""
-
 class ReadPDF:
     def __init__(self, url):
         self.url = url
@@ -44,7 +43,7 @@ class JobDescLLM:
      def __init__(self, job_title, job_description) -> None:
           self.job_title = job_title
           self.job_description = job_description
-          self.llm = OpenAI(temperature=0.6)
+          self.llm = OpenAI(temperature=0.6, max_tokens=-1)
 
           with open("src/server/py_utils/elements.json") as elements_file:
                self.elements = json.load(elements_file)
@@ -108,15 +107,80 @@ class JobDescLLM:
                elements_dict[name_] = temp_[name_]
           return elements_dict
 
+     def create_enhancement_chain(self, inputs):
+          enhancements_pt = PromptTemplate(
+               input_variables=["job_description", "flag_dict"],
+               template = """
+          Your boss has written a job description to recruit new employees. 
+
+          ---
+          Job description:
+          {job_description}
+          --
+          Flag dictionary:
+          {flag_dict}
+
+          YOUR JOB:
+
+          For each field in the flag dictionary, If the flag = 1, 
+          Analyse the field and reccomendations enhancements to be added to the field with relevance to the given job.
+          
+          If the flag = 0, State that NO enhancements has to be added to the field.
+
+          Return the name of the field, and the reccomended enhancements, if any.
+          """
+          )
+          chain = LLMChain(llm = self.llm,
+                           prompt=enhancements_pt,
+                           output_key="enhancements")
+          
+          enhance_pt = PromptTemplate(
+               input_variables=["enhancements", "job_description", "job_title"],
+               template = """
+               Your boss has written a job description for the post of {job_title} and 
+               your coworker has reccomendatations for enhancements to be incorporated in the job description. 
+
+               For each of the fields present in the job description, It will contain a score and 
+               It will be marked as flagged or not flagged. 
+               IF the field is flagged, It will contain a reccomendation for enhancement
+               ---
+               Job description:
+               {job_description}
+               ---
+               Reccomendations for enhancements:
+               {enhancements}
+               ---
+               YOUR JOB:
+               1) LOOP through each field present in the reccomendations.
+               2) in the field, IF reccomendation is provided, Consider the provided reccomendation and edit the job description accordingly.
+               3) If reccomendation is not provided, DO NOT EDIT the field in the job description!!
+
+               Return ONLY the edited FULL job description. 
+               """
+          )
+
+          chain2 = LLMChain(llm = self.llm,
+                           prompt=enhance_pt,
+                           output_key="final_job_desc")
+          
+          sqc = SequentialChain(
+               chains = [chain,chain2],
+               input_variables=["job_description", "flag_dict", "job_title"],
+               output_variables=["enhancements", "final_job_desc"],
+               verbose=False
+               
+          )
+
+          return sqc(inputs)
+     
+
      
      async def async_generate(self, sqc, inputs):
           resp = await sqc.arun(inputs)
           return resp
      
      
-     async def generate_score_concurrently(self):
-
-          
+     async def generate_concurrently(self):
           pt = PromptTemplate(
                input_variables=["job_title", "field", "field_info", "field_val"],
                template = """
@@ -133,8 +197,7 @@ class JobDescLLM:
               This is what your boss has written:
 
               {field_val}
-              ---
-              
+              ---         
           """
           )
           chain = LLMChain(llm = self.llm,
@@ -149,7 +212,6 @@ class JobDescLLM:
           )
 
           elements_dict = await self.build_dict() 
-          #print("ELEM DICT:", elements_dict)
           tasks = []
 
           for field in elements_dict.keys():
@@ -165,42 +227,35 @@ class JobDescLLM:
                tasks.append(self.async_generate(sqc, inputs))
 
           results = await asyncio.gather(*tasks)
-          sum_score = sum([float(i) for  i in results])
-          return sum_score
+          results  = [float(i) for  i in results]
+
+          sum_score = sum(results)
+          scoring_dict = {k:v for (k,v) in zip(elements_dict.keys(), results)}
+          flag_dict = {}
+          threshold = 8.0
+
+          for key in scoring_dict.keys():
+               if scoring_dict[key]< threshold:
+                    flag_dict[key] = 1
+               else:
+                    flag_dict[key] = 0
           
 
- 
-      
-jdl = JobDescLLM("Bank manager",
-                 """
-We are seeking an experienced and dynamic individual to fill the role of Bank Manager at our reputable financial institution. The Bank Manager will be responsible for overseeing the daily operations of the branch, ensuring excellent customer service, managing a team of dedicated professionals, and achieving financial targets. The successful candidate will demonstrate strong leadership skills, a deep understanding of banking products and services, and the ability to foster a positive and collaborative work environment. 
-Responsibilities:
 
-Lead, mentor, and motivate a team of banking professionals to provide exceptional customer service and meet performance goals.
-Manage branch operations, including transaction processing, account management, and compliance with regulatory guidelines.
-Develop and execute strategies to attract and retain customers while promoting a range of banking products and services.
-Collaborate with regional management to set and achieve branch-specific financial targets and operational objectives.
-Monitor and maintain compliance with industry regulations and internal policies to ensure a secure and efficient banking environment.
-Build and maintain strong relationships with customers, local businesses, and community organizations to enhance the bank's reputation and market presence.
-Analyze financial reports and market trends to make informed decisions that optimize branch performance and profitability.
-Implement training programs to enhance employee skills and knowledge, ensuring the delivery of accurate and up-to-date information to customers.
-Handle escalated customer inquiries and resolve complex issues in a timely and professional manner.
-Prepare and present regular reports on branch performance, operational metrics, and customer feedback to senior management.
+          enchancements_out = self.create_enhancement_chain({
+               "job_description": self.job_description,
+               "job_title": self.job_title,
+               "flag_dict": flag_dict
+          })
 
-Qualifications:
+          return sum_score, scoring_dict, enchancements_out['enhancements'], enchancements_out['final_job_desc']
 
-Bachelor's degree in Finance, Business Administration, or related field (Master's degree preferred).
-Minimum of 5 years of progressive experience in banking, including roles in customer service, operations, and leadership.
-Strong understanding of financial products, regulations, and industry trends.
-Excellent interpersonal, communication, and leadership skills.
-Proven track record of achieving and exceeding financial targets.
-Ability to make informed decisions under pressure and adapt to a rapidly changing banking landscape.
-Proficiency in banking software and systems.
-Exceptional problem-solving and decision-making abilities.
-Strong commitment to ethical conduct and integrity.
+          
+     
+     
+          
 
-""")
-asyncio.run(jdl.generate_score_concurrently())   
+
 
 
      
