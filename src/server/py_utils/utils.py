@@ -7,7 +7,7 @@ from langchain.prompts import PromptTemplate
 import asyncio
 import json
 
-os.environ["OPENAI_API_KEY"] = ""
+os.environ["OPENAI_API_KEY"] = "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"
 class ReadPDF:
     def __init__(self, url):
         self.url = url

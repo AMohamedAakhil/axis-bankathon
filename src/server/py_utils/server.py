@@ -18,7 +18,7 @@ async def job_desc_score_endpoint(data: dict):
         return {"error": "Both job_title and job_description are required."}
     
     
-    score, element_wise_score, enhancement_recc, edited_job_description = asyncio.run(job_llm.generate_concurrently())
+    score, element_wise_score, enhancement_recc, edited_job_description = await job_llm.generate_concurrently()
     return score, element_wise_score, enhancement_recc, edited_job_description
 
 if __name__ == "__main__":
