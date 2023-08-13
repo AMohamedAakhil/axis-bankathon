@@ -37,7 +37,7 @@ next-env.d.ts
 
 #python files
 /src/py_utils/temp/temp.pdf
-
+/src/py_utils/.env
 
 #env
 /myvenv

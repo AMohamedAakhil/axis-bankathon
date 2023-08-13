@@ -6,8 +6,15 @@ from langchain.llms import OpenAI
 from langchain.prompts import PromptTemplate
 import asyncio
 import json
+import os
+from os.path import join, dirname
+from dotenv import load_dotenv
 
-os.environ["OPENAI_API_KEY"] = "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"
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
+
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+
 class ReadPDF:
     def __init__(self, url):
         self.url = url
@@ -30,7 +37,7 @@ class JobDescLLM:
      def __init__(self, job_title, job_description) -> None:
           self.job_title = job_title
           self.job_description = job_description
-          self.llm = OpenAI(temperature=0.6, max_tokens=-1)
+          self.llm = OpenAI(temperature=0.6, max_tokens=-1, openai_api_key=OPENAI_API_KEY)
 
           with open("src/server/py_utils/elements.json") as elements_file:
                self.elements = json.load(elements_file)
