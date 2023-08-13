@@ -38,7 +38,7 @@ export default async function Home() {
                   "<br/>",
                 ); // Replace \n with <br/> for line breaks
                 return (
-                  <Card className="mt-10 bg-black text-white border-dashed hover:border-solid">
+                  <Card key={job.title} className="mt-10 bg-black text-white border-dashed hover:border-solid">
                     <CardHeader>
                       <CardTitle>Job Title: {job.title}</CardTitle>
                     </CardHeader>
