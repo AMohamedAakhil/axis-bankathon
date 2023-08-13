@@ -1,6 +1,6 @@
 import fastapi
 import uvicorn
-from utils import job_desc_score, cv_score
+from utils import job_desc_score
 
 app = fastapi.FastAPI()
 
