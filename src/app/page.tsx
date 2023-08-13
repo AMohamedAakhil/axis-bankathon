@@ -26,12 +26,12 @@ export default async function Home() {
           <CardTitle>Your Pipelines</CardTitle>
           <CardDescription>View, create and edit your pipelines here</CardDescription>
         </CardHeader>
-        <CardContent className="-mt-5">
+        <CardContent className="-mt-10">
           {data.map((job: any) => {
       if (job.title) {
         const formattedDescription = job.description.replace(/\n/g, '<br/>'); // Replace \n with <br/> for line breaks
         return (
-          <Card className="mt-5 bg-black text-white">
+          <Card className="mt-10 bg-black text-white">
             <CardHeader>
               <CardTitle>Job Title: {job.title}</CardTitle>
             </CardHeader>
