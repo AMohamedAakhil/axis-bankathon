@@ -1,30 +1,25 @@
 import fastapi
+import asyncio
 import uvicorn
-from utils import job_desc_score
+from utils import JobDescLLM
 
 app = fastapi.FastAPI()
+
 
 @app.post("/job_desc_score/")
 async def job_desc_score_endpoint(data: dict):
     job_title = data.get('job_title')
     job_description = data.get('job_description')
-    print(job_title, job_description)
+
+    job_llm = JobDescLLM(job_title=job_title, 
+                         job_description=job_description)
+    
     if job_title is None or job_description is None:
         return {"error": "Both job_title and job_description are required."}
     
     
-    result = job_desc_score(job_title, job_description)
-    return result
-
-@app.post("/job_desc_score/")
-async def cv_rank_endpoint(data: dict):
-    job_title = data.get('job_title')
-    list_cv_texts = data.get('list_cv_texts')
-    if job_title is None or list_cv_texts is None:
-        return {"error": "Both job_title and job_description are required."}
-    result = list_cv_texts(job_title, list_cv_texts)
-    return result
-
+    score, element_wise_score, enhancement_recc, edited_job_description = asyncio.run(job_llm.generate_concurrently())
+    return score, element_wise_score, enhancement_recc, edited_job_description
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
