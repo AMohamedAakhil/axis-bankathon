@@ -1,7 +1,10 @@
 import fastapi
 import asyncio
 import uvicorn
+
 from utils.job_desc_llm import JobDescLLM
+from utils.cv_llm import CVranker
+from utils.interview_llm import InterviewLLM
 
 app = fastapi.FastAPI()
 
@@ -20,6 +23,33 @@ async def job_desc_score_endpoint(data: dict):
     
     score, element_wise_score, enhancement_recc, edited_job_description = await job_llm.generate_concurrently()
     return score, element_wise_score, enhancement_recc, edited_job_description
+
+@app.post("/cv_ranking/")
+async def cv_ranking_endpoint(data: dict):
+    job_title = data.get('job_title')
+    job_description = data.get('job_description')
+    cv_list = data.get('cv_list')
+
+    cv_ranker = CVranker(job_title=job_title, 
+                         job_description=job_description,
+                         cv_list=cv_list)
+    
+    cv_rankings = await cv_ranker.generate_rankings()
+    return cv_rankings
+
+@app.post("/interview_questions/")
+async def interview_questions_endpoint(data: dict):
+    job_title = data.get('job_title')
+    job_description = data.get('job_description')
+    cv= data.get('cv')
+
+    interview_llm = InterviewLLM(job_title=job_title, 
+                         job_description=job_description,
+                         cv=cv)
+    
+    questions = interview_llm.generate_questions()
+    return questions
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)

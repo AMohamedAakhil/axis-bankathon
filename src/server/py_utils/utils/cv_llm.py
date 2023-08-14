@@ -209,7 +209,7 @@ class CVranker:
           resp = await review_llm.arun(inputs)
           return resp
 
-     async def generate_scores(self):
+     async def generate_rankings(self):
           score_tasks= []
           review_tasks = []
           for cv in self.cv_list[0]:
@@ -221,6 +221,7 @@ class CVranker:
                score_tasks.append(self.async_generate_scores(cv_score_llm))
                review_tasks.append(self.async_generate_reviews(review_llm, 
                                                               {"cv": cv, "job_title": self.job_title}))
+               
           results1 = await asyncio.gather(*score_tasks)
           results2 = await asyncio.gather(*review_tasks)
 

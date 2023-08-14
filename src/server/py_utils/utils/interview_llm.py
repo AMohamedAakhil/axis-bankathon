@@ -44,5 +44,4 @@ class InterviewLLM:
           return chain1.run(job_title=self.job_title, job_description=self.job_description, CV=self.cv)
      
 
-interview = InterviewLLM("Software Engineer", "This is a job description", "This is a CV")
-print(interview.generate_questions())
+
