@@ -1,5 +1,6 @@
 import JobTable from "@/components/JobTable";
 import RedirectButton from "@/components/redirectButton";
+import { currentUser } from "@clerk/nextjs";
 import { GetData } from "@/server/utils";
 import {
   Card,
@@ -12,6 +13,8 @@ import {
 
 export default async function Home() {
   const data = await GetData("jobs", 100);
+  const user = await currentUser();
+  console.log(user)
   return (
     <main className="p-5 mt-1">
       <div className="flex justify-between">
@@ -38,7 +41,7 @@ export default async function Home() {
                   "<br/>",
                 ); // Replace \n with <br/> for line breaks
                 return (
-                  <Card key={job.title} className="mt-10 bg-black text-white border-dashed hover:border-solid">
+                  <Card key={job.title} className="mt-10 bg-black text-white border-dashed hover:border-solid hover:bg-slate-950">
                     <CardHeader>
                       <CardTitle>Job Title: {job.title}</CardTitle>
                     </CardHeader>
