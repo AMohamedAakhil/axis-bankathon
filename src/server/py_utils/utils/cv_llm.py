@@ -210,38 +210,33 @@ class CVranker:
           return resp
 
      async def generate_rankings(self):
-          score_tasks= []
           review_tasks = []
+          scores_contacts = []
           for cv in self.cv_list[0]:
                cv_score_llm  = BaseCVLLM(job_title=self.job_title,
                                         job_description=self.job_description,
                                         cv= cv)
                review_llm = self.build_review_llm()
-
-               score_tasks.append(self.async_generate_scores(cv_score_llm))
+               score, elem_dict = await cv_score_llm.generate_concurrently()
+               
+               scores_contacts.append((score,elem_dict['Contact information']))
                review_tasks.append(self.async_generate_reviews(review_llm, 
                                                               {"cv": cv, "job_title": self.job_title}))
                
-          results1 = await asyncio.gather(*score_tasks)
-          results2 = await asyncio.gather(*review_tasks)
+          summaries = await asyncio.gather(*review_tasks)
 
           cv_rankings = []
-          for num, result in enumerate(results1):
+          for num, result in enumerate(scores_contacts):
                cv_info = {}
                cv_info['score'] = result[0]
                cv_info['contact_info'] = result[1]
-               cv_info['short_summary'] = results2[num]
+               cv_info['short_summary'] = summaries[num]
                cv_rankings.append(cv_info)
 
           cv_rankings.sort(key=self.sort_func, reverse=True)
           return cv_rankings
           
-               
-            
 
-               
-               
-               
 
           
                
