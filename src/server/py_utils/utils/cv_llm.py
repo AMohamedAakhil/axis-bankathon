@@ -176,10 +176,10 @@ class CVranker:
      
      def build_review_llm(self):
           pt = PromptTemplate(
-               input_variables=["cv", "job_title"],
+               input_variables=["cv"],
                template = """
-                Given a CV for the the job title: {job_title}.
                 Summarise the CV in a short, clear and concise way. Make sure to retain all the important elements of the CV.
+                DO NOT MAKE UP ANY INFORMATION. ONLY USE THE INFORMATION PROVIDED IN THE CV BELOW.
                 ---
                 CV:
                 {cv}        
@@ -194,7 +194,7 @@ class CVranker:
           
           review_llm = SequentialChain(
                chains = [llmchain],
-               input_variables=["cv","job_title"],
+               input_variables=["cv"],
                output_variables=["review"],
                verbose = False
           )
@@ -221,7 +221,7 @@ class CVranker:
                
                scores_contacts.append((score,elem_dict['Contact information']))
                review_tasks.append(self.async_generate_reviews(review_llm, 
-                                                              {"cv": cv, "job_title": self.job_title}))
+                                                              {"cv": cv}))
                
           summaries = await asyncio.gather(*review_tasks)
 
