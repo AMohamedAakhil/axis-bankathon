@@ -14,7 +14,6 @@ export const evaluateResumes = async (title: string, description: string, cv_lis
         "Content-Type": "application/json",
       },
       body: JSON.stringify(requestData), // Serialize the data as JSON
-      cache: "no-store",
     });
 
     if (!response.ok) {
