@@ -10,12 +10,33 @@ from os.path import join, dirname
 from dotenv import load_dotenv
 import asyncio
 
+import requests
+import PyPDF2
+from io import BytesIO
+
+
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
+
+def read_pdf(url):
+     response = requests.get(url)
+    
+     if response.status_code == 200:
+        pdf_data = BytesIO(response.content)
+        pdf_reader = PyPDF2.PdfFileReader(pdf_data)
+        
+        all_text = []
+        for page_num in range(pdf_reader.numPages):
+            page = pdf_reader.getPage(page_num)
+            text = page.extractText()
+            all_text.append(text)
+        
+        return '\n'.join(all_text)
+     
 
 class ReadPDF:
     def __init__(self, url):
@@ -34,6 +55,8 @@ class ReadPDF:
             all_text += page.extract_text()
             
         return all_text
+    
+
     
 class BaseCVLLM:
     def __init__(self, cv, job_title, job_description) -> None:
@@ -165,8 +188,8 @@ class BaseCVLLM:
           return  sum_score, elements_dict
 
 class CVranker:
-     def __init__(self, cv_list: list, job_title: str, job_description: str) -> None:
-          self.cv_list = cv_list,
+     def __init__(self, cv_links_list, job_title: str, job_description: str) -> None:
+          self.cvs = [read_pdf(link) for link in cv_links_list]
           self.job_title = job_title,
           self.job_description = job_description 
           self.review_llm = OpenAI(temperature=0.6, openai_api_key=OPENAI_API_KEY)

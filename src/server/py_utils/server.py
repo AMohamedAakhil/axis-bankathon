@@ -28,11 +28,11 @@ async def job_desc_score_endpoint(data: dict):
 async def cv_ranking_endpoint(data: dict):
     job_title = data.get('job_title')
     job_description = data.get('job_description')
-    cv_list = data.get('cv_list')
+    cv_links = data.get('cv_links')
 
     cv_ranker = CVranker(job_title=job_title, 
                          job_description=job_description,
-                         cv_list=cv_list)
+                         cv_links_list=cv_links)
     
     cv_rankings = await cv_ranker.generate_rankings()
     return cv_rankings
