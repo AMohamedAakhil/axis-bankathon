@@ -1,7 +1,7 @@
 import fastapi
 import asyncio
 import uvicorn
-from utils import JobDescLLM
+from utils.job_desc_llm import JobDescLLM
 
 app = fastapi.FastAPI()
 

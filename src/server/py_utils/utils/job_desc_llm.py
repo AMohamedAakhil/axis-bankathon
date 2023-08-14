@@ -15,31 +15,14 @@ load_dotenv(dotenv_path)
 
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
-class ReadPDF:
-    def __init__(self, url):
-        self.url = url
-        self.response = requests.get(url)
-        self.dir = 'temp/temp.pdf'
 
-    def read(self):
-        with open(self.dir, 'wb') as fd:
-            fd.write(self.response.content)
-
-        reader = PdfReader(self.dir)
-        all_text = ""
-
-        for page in reader.pages:
-            all_text += page.extract_text()
-            
-        return all_text
-    
 class JobDescLLM:
      def __init__(self, job_title, job_description) -> None:
           self.job_title = job_title
           self.job_description = job_description
           self.llm = OpenAI(temperature=0.6, max_tokens=-1, openai_api_key=OPENAI_API_KEY)
 
-          with open("src/server/py_utils/elements.json") as elements_file:
+          with open("src/server/py_utils/json_components/jd_elements.json") as elements_file:
                self.elements = json.load(elements_file)
 
 
@@ -245,10 +228,6 @@ class JobDescLLM:
           return sum_score, scoring_dict, enchancements_out['enhancements'], enchancements_out['final_job_desc']
 
           
-     
-     
-          
-
 
 
 
