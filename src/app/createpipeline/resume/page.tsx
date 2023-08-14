@@ -70,6 +70,7 @@ const Resume = async () => {
       .sort((a: any, b: any) => parseInt(b.score) - parseInt(a.score)) // Sort in descending order
       .map((evaluation: any, index: number) => (
         <CVCard
+          key={index+1}
           contact_info={evaluation.contact_info}
           score={evaluation.score}
           summary={evaluation.short_summary}

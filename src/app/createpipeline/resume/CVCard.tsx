@@ -25,19 +25,20 @@ type params = {
     score: string,
     summary: string
     rank: number
+    key: number
 }
 
-const CVCard = ({contact_info, score, summary, rank}: params) => {
+const CVCard = ({contact_info, score, summary, rank, key}: params) => {
   return (
     <Dialog>
 <DialogTrigger className="bg-black">
-<Card key={contact_info} className="bg-black text-white p-5 mb-5 hover:border-dashed hover:bg-slate-950" >
+<Card key={key} className="bg-black text-white p-5 mb-5 hover:border-dashed hover:bg-slate-950" >
     <CardTitle className="text-right h-full flex justify-between" style={{ whiteSpace: 'pre-line' }}>
       <div className="text-start">
       <h1 className="text-2xl">Rank: {rank}</h1>
       <h1 className="text-6xl">{score}/100</h1>
       </div>
-      <div>
+      <div className="font-light">
       {contact_info}
       </div>
       </CardTitle>
