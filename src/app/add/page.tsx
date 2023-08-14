@@ -4,7 +4,7 @@ import "@uploadthing/react/styles.css";
 
 const Add = () => {
   return (
-    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2    ">
+    <div className="flex justify-center items-center p-5">
       <div className="w-full">
         <h1 className="text-2xl">Add new resume</h1>
         <Upload />
