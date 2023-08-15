@@ -27,6 +27,19 @@ export async function GetPipelineData(collection: string, limit: number = 30, pi
 }
 
 
+export async function GetCandidateData(collection: string, limit: number = 30, email: any) {
+  const user = await currentUser();
+  const { db } = await connectToDatabase();
+  const coll = await db.collection(collection);
+  const results = await coll
+    .find({ "pipelineID": email })
+    .limit(limit)
+    .toArray();
+  return results;
+}
+
+
+
 export async function GetEvalData(collection: string, limit: number = 30) {
   const user = await currentUser();
   const { db } = await connectToDatabase();

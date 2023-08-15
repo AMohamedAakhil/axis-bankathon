@@ -54,7 +54,7 @@ const CVDisplay = () => {
         <CardTitle>Applicant Ranking</CardTitle>
         <CardDescription>The ranking according to the CVs submitted for each applicant. </CardDescription>
       </CardHeader>
-      <CardContent className='grid grid-cols-2 gap-4'>
+      <CardContent className='grid grid-cols-1 gap-4'>
 {res && res.length > 0 ? 
   res
     .sort((a: any, b: any) => parseInt(b.score) - parseInt(a.score)) // Sort in descending order
