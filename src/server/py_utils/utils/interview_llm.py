@@ -1,11 +1,7 @@
-from pypdf import PdfReader
 import os
-import requests
-from langchain.chains import LLMChain, SequentialChain
+from langchain.chains import LLMChain
 from langchain.llms import OpenAI
 from langchain.prompts import PromptTemplate
-import asyncio
-import json
 import os
 from os.path import join, dirname
 from dotenv import load_dotenv

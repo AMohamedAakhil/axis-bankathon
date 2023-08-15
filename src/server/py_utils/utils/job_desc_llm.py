@@ -1,6 +1,4 @@
-from pypdf import PdfReader
 import os
-import requests
 from langchain.chains import LLMChain, SequentialChain
 from langchain.llms import OpenAI
 from langchain.prompts import PromptTemplate
