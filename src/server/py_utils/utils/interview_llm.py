@@ -23,10 +23,14 @@ class InterviewLLM:
      def generate_questions(self):
           prompt1 = """
           You are a recruiter for a company. You are recruiting for the role of {job_title}. 
-          The description of the role is as follows: {job_description}
+          ---
+          The description of the job is as follows: 
+          {job_description}
+          ---
           The applicant's CV is as follows: {CV}
-
-          You have to generate questions for the applicant based on the CV and the job description.
+          ---
+          You have to generate SCREENING QUESTIONS for the applicant based on the CV and the job description.
+          These questions must effectively assess their suitability for the role of {job_title}
           Make sure to RETURN ONLY JSON, not code or any other text. 
           """
 
@@ -86,10 +90,6 @@ class InterviewLLM:
 
           return score_per_question, sum_score
 
-          
-               
-
- 
           
 
 
