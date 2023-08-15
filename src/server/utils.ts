@@ -32,7 +32,7 @@ export async function GetCandidateData(collection: string, limit: number = 30, e
   const { db } = await connectToDatabase();
   const coll = await db.collection(collection);
   const results = await coll
-    .find({ "pipelineID": email })
+    .find({ "email": email })
     .limit(limit)
     .toArray();
   return results;

@@ -36,7 +36,7 @@ export default async function Home() {
               View, create and edit your pipelines here
             </CardDescription>
           </CardHeader>
-          <CardContent className="-mt-10 grid grid-cols-3 gap-4">
+          <CardContent className="-mt-10 grid grid-cols-3 gap-4 mb-2">
             {data.map((job: any) => {
               if (job.title) {
                 const formattedDescription = job.description.replace(

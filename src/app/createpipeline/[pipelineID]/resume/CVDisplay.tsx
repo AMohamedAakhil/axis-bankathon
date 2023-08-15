@@ -41,7 +41,7 @@ const CVDisplay = () => {
         const job_title = jobData[0].job_title;
         const job_description = jobData[0].job_description;
         const res = await evaluateResumes(job_title, job_description, urlList);
-        sendEmails("a.aakhilmohamed@gmail.com", "hi nigga")
+        sendEmails("a.aakhilmohamed@gmail.com", `http://localhost:3000/interview/aakhilmohamed`)
         setRes(res);
         console.log("res", res)
         res ? setStartLoad(true) : setStartLoad(false);
@@ -65,6 +65,7 @@ const CVDisplay = () => {
         score={evaluation.score}
         summary={evaluation.short_summary}
         rank={index + 1} // Calculate rank based on array index
+        element_wise_score={evaluation.element_wise_score}
       />
     ))
   : <CardDescription>Loading.</CardDescription>

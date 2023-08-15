@@ -26,9 +26,10 @@ type params = {
     summary: string
     rank: number
     key: number
+    element_wise_score: number[],
 }
 
-const CVCard = ({contact_info, score, summary, rank, key}: params) => {
+const CVCard = ({contact_info, score, summary, rank, key, element_wise_score}: params) => {
   return (
     <Dialog>
 <DialogTrigger className="bg-black">
@@ -49,6 +50,14 @@ const CVCard = ({contact_info, score, summary, rank, key}: params) => {
     <h1 className="text-2xl">Rank: {rank}</h1>
       <h1 className="text-6xl">{score}/100</h1>    </DialogHeader>
       <h1 className="font-extralight" style={{ whiteSpace: 'pre-line' }}><h1 className="text-xl mb-2 font-medium">Personal Information: </h1>{contact_info}</h1>
+      <h1 className="font-extralight" style={{ whiteSpace: 'pre-line' }}><h1 className="text-xl font-medium">Element Wise Score: </h1></h1>
+      <div>
+      {Object.keys(element_wise_score).map((key: any) => (
+        <h1 className="font-extralight" key={key}>
+          {key}: {element_wise_score[key]}
+        </h1>
+      ))}
+      </div>
       <h1 className="font-extralight" style={{ whiteSpace: 'pre-line' }}><h1 className="text-xl font-medium">Summary: </h1>{summary}</h1>
 </DialogContent>
     
