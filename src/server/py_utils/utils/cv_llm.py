@@ -235,7 +235,7 @@ class CVranker:
      async def generate_rankings(self):
           review_tasks = []
           scores_contacts = []
-          for cv in self.cv_list[0]:
+          for cv in self.cv[0]:
                cv_score_llm  = BaseCVLLM(job_title=self.job_title,
                                         job_description=self.job_description,
                                         cv= cv)

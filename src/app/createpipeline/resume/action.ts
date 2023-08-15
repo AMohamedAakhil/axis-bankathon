@@ -4,8 +4,9 @@ export const evaluateResumes = async (title: string, description: string, cv_lis
   const requestData = {
     job_title: title,
     job_description: description,
-    cv_list: cv_list
+    cv_links: cv_list
   };
+  console.log(JSON.stringify(requestData))
 
   try {
     const response = await fetch("http://127.0.0.1:8000/cv_ranking/", {
