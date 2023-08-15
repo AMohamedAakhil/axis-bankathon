@@ -5,11 +5,7 @@ import { currentUser } from "@clerk/nextjs";
 // FileRouter for your app, can contain multiple FileRoutes
 export const ourFileRouter = {
   // Define as many FileRoutes as you like, each with a unique routeSlug
-  imageUploader: f([
-    "application/msword",
-    "pdf",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  ])
+  imageUploader: f({ blob: { maxFileSize: "1GB", maxFileCount: 20 } })
     // Set permissions and file types for this FileRoute
     .middleware(async ({ req }) => {
       const user = await currentUser();

@@ -46,9 +46,10 @@ const CVCard = ({contact_info, score, summary, rank, key}: params) => {
 </DialogTrigger>
 <DialogContent className="bg-black">
     <DialogHeader>
-    <DialogTitle className='mb-3'>Score: {score}</DialogTitle>
-    </DialogHeader>
-    {summary}
+    <h1 className="text-2xl">Rank: {rank}</h1>
+      <h1 className="text-6xl">{score}/100</h1>    </DialogHeader>
+      <h1 className="font-extralight" style={{ whiteSpace: 'pre-line' }}><h1 className="text-xl mb-2 font-medium">Personal Information: </h1>{contact_info}</h1>
+      <h1 className="font-extralight" style={{ whiteSpace: 'pre-line' }}><h1 className="text-xl font-medium">Summary: </h1>{summary}</h1>
 </DialogContent>
     
   </Dialog>

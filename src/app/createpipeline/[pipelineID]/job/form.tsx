@@ -16,21 +16,24 @@ import { redirect } from "next/navigation";
 import { BsStars } from "react-icons/bs";
 import { AiOutlineArrowRight } from "react-icons/ai";
 import { evaluateJob } from "./actions";
+import { useParams } from 'next/navigation'
 
 const Form = ({ user }: any) => {
+  const formatUser = JSON.parse(user);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [afterEval, setAfterEval] = useState(false);
   const [editedDescription, setEditedDescription] = useState("");
   const [evalData, setEvalData] = useState<any>([]);
+  const params = useParams()
+  console.log(params)
   const submitForm = async () => {
     setLoading(true);
-    const response = { title: title, description: description, user: user };
+    const response = { pipelineID: params.pipelineID, title: title, description: description, user: formatUser };
     const res = await InsertData("jobs", response);
-    console.log(res);
     setLoading(false);
-    redirect("/");
+    redirect(`/createpipeline/${params.pipelineID}/resume_upload`);
   };
   const [startEval, setStartEval] = useState(false);
   const [evalLoading, setEvalLoading] = useState(false);

@@ -15,6 +15,18 @@ export async function GetData(collection: string, limit: number = 30) {
   return results;
 }
 
+export async function GetPipelineData(collection: string, limit: number = 30, pipelineID: any) {
+  const user = await currentUser();
+  const { db } = await connectToDatabase();
+  const coll = await db.collection(collection);
+  const results = await coll
+    .find({ "pipelineID": pipelineID })
+    .limit(limit)
+    .toArray();
+  return results;
+}
+
+
 export async function GetEvalData(collection: string, limit: number = 30) {
   const user = await currentUser();
   const { db } = await connectToDatabase();

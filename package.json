@@ -24,7 +24,7 @@
     "@types/node": "20.4.8",
     "@types/react": "18.2.19",
     "@types/react-dom": "18.2.7",
-    "@uploadthing/react": "^5.2.1",
+    "@uploadthing/react": "^5.3.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "eslint": "8.46.0",
@@ -40,9 +40,11 @@
     "tailwind-merge": "^1.14.0",
     "tailwindcss-animate": "^1.0.6",
     "typescript": "5.1.6",
-    "uploadthing": "^5.3.2"
+    "uploadthing": "^5.3.3",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
+    "@types/uuid": "^9.0.2",
     "autoprefixer": "^10.4.14",
     "postcss": "^8.4.27",
     "prettier": "3.0.1",
