@@ -44,13 +44,16 @@ async def cv_ranking_endpoint(data: dict):
     job_title = data.get('job_title')
     job_description = data.get('job_description')
     cv_links = data.get('cv_links')
-
-    cv_ranker = CVranker(job_title=job_title, 
-                         job_description=job_description,
-                         cv_links_list=cv_links)
+    try:
+        cv_ranker = CVranker(job_title=job_title, 
+                            job_description=job_description,
+                            cv_links_list=cv_links)
+    except TypeError:
+        return cv_links + "nigger"
     
     try:
         cv_rankings = await cv_ranker.generate_rankings()
+        print(cv_rankings)
         return cv_rankings
     except ValueError:
         return "We ran into an unexpected error, Please try again"
@@ -88,23 +91,8 @@ async def evaluate_qna_endpoint(data: dict):
     except ValueError:
         return "We ran into an unexpected error, Please try again"
     
-@app.post("/evaluate_qna/")
-async def evaluate_qna_endpoint(data: dict):
-    job_title = data.get('job_title')
-    question = data.get('questions')
-    answer = data.get('answers')
-
-    try:
-
-        score_per_question, total_score = await InterviewLLM.evaluate_answers(job_title=job_title,
-                                         question=question,
-                                         answer=answer)
-        return score_per_question, total_score
-    except ValueError:
-        return "We ran into an unexpected error, Please try again"
-    
 @app.post("/send_round1_email/")
-def send_round1_mail(data):
+async def send_round1_mail(data: dict):
     email_sender = 'axisbank.hrteam123@gmail.com'
     email_password = EMAIL_PASS
     email_receiver = data.get('receiver_email')
@@ -137,7 +125,9 @@ def send_round1_mail(data):
 
     with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
         smtp.login(email_sender, email_password)
+        print("Succesfully logged in ")
         smtp.sendmail(email_sender, email_receiver, em.as_string())
+        print("Succesfully sent in ")
     response={
         "sent" : "true",
     }

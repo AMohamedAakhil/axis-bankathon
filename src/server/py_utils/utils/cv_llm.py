@@ -231,6 +231,7 @@ class BaseCVLLM:
 
 class CVranker:
      def __init__(self, cv_links_list: list, job_title: str, job_description: str) -> None:
+          print("mah nigga: " ,cv_links_list)
           self.cvs = [read_pdf(link) for link in cv_links_list]
           self.job_title = job_title,
           self.job_description = job_description 
