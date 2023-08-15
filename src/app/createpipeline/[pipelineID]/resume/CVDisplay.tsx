@@ -14,6 +14,7 @@ import { evaluateResumes } from './action';
 import CVCard from './CVCard';
 import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { sendEmails } from './action';
 
 const CVDisplay = () => {
     const params = useParams()
@@ -35,7 +36,12 @@ const CVDisplay = () => {
         for (const item of cvData[0].response) {
             urlList.push(item.url); // Use item.fileUrl instead of item.url
         }
-        const res = await evaluateResumes("Bank Manager", "Manage People", urlList);
+        const jobData: any = await GetPipelineData("jobs", 10, params.pipelineID);
+        console.log("NIGGA JOB DATA", jobData)
+        const job_title = jobData[0].job_title;
+        const job_description = jobData[0].job_description;
+        const res = await evaluateResumes(job_title, job_description, urlList);
+        sendEmails("a.aakhilmohamed@gmail.com", "hi nigga")
         setRes(res);
         console.log("res", res)
         res ? setStartLoad(true) : setStartLoad(false);
