@@ -50,6 +50,17 @@ async def interview_questions_endpoint(data: dict):
     questions = interview_llm.generate_questions()
     return questions
 
+@app.post("/evaluate_qna/")
+async def evaluate_qna_endpoint(data: dict):
+    job_title = data.get('job_title')
+    question = data.get('questions')
+    answer = data.get('answers')
+
+    score_per_question, total_score = await InterviewLLM.evaluate_answers(job_title=job_title,
+                                         question=question,
+                                         answer=answer)
+    return score_per_question, total_score
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)

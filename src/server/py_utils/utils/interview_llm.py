@@ -5,6 +5,7 @@ from langchain.prompts import PromptTemplate
 import os
 from os.path import join, dirname
 from dotenv import load_dotenv
+import asyncio
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
@@ -40,34 +41,60 @@ class InterviewLLM:
           
           return chain1.run(job_title=self.job_title, job_description=self.job_description, CV=self.cv)
      
-     def evaluate_answer(self, question, answer):
+     @staticmethod
+     async def async_gen(sqc, inputs):
+          resp = await sqc.arun(inputs)
+          return resp
+     
+     @staticmethod
+     async def evaluate_answers(job_title, questions, answers):
+          llm = OpenAI(temperature=0.6, max_tokens=-1, openai_api_key=OPENAI_API_KEY)
+
           eval_prompt = PromptTemplate(
-               input_variables=["job_title" ,"question", "answer"],
-               template= """
-                You are a recruiter for a company. You are recruiting for the role of {job_title}. 
-                You have provided an interview question to candidate and they have given you the answer.
-                Your job is evaluate the answer and score it out of 10. You are allowed to use decimal values.
-                ---
-                The question given to candidate:
-                {question}
-                ---
-                The answer provided by the candidate:
-                {answer}
-                ---
+               input_variables=["job_title", "question", "answer"],
+               template="""
+               You are a recruiter for a company. You are recruiting for the role of {job_title}. 
+               You have provided an interview question to candidate and they have given you the answer.
+               Your job is to see how correct the provided answer is and evaluate the answer and score it out of 10. You are allowed to use decimal values.
+               ---
+               The question given to candidate:
+               {question}
+               ---
+               The answer provided by the candidate:
+               {answer}
+               ---
                Evaluate the answer Only return the score out of 10 and no other text.
                """
           )
 
-          eval_chain = LLMChain(llm = self.llm,
-                                prompt = eval_prompt,
-                                input_variables = ["job_title", "question", "answer"],
-                                output_key="score")
-          return eval_chain.run(job_title = self.job_title, 
-                                question = question,
-                                answer = answer)
-          
+          eval_chain = LLMChain(llm=llm,
+                                   prompt=eval_prompt,
+                                   output_key="score")
+
+          sqc = SequentialChain(chains=[eval_chain],
+                                   input_variables=["job_title", "question", "answer"],
+                                   output_variables=["score"],
+                                   verbose=False)
+
+          tasks = []
+          for q, a in zip(questions, answers):
+               tasks.append(InterviewLLM.async_gen(sqc, {"job_title": job_title,
+                                                            "question": q, "answer": a}))
+          results = await asyncio.gather(*tasks)
+          score_per_question = [float(i) for i in results]
+          sum_score = sum(score_per_question)
+
+          return score_per_question, sum_score
 
           
+               
+
+ 
+          
+
+
+
+
 
 
 

@@ -22,6 +22,40 @@ load_dotenv(dotenv_path)
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
 
+def read_text_from_url(url):
+  """Reads all the text from a file at the specified URL.
+
+  Args:
+    url: The URL of the file to read.
+
+  Returns:
+    A Python string containing the text of the file.
+  """
+
+  import requests
+  import io
+
+  response = requests.get(url)
+  if response.status_code != 200:
+    raise ValueError(f"Could not read file from URL: {url}")
+
+  file_content = response.content
+
+  if file_content.startswith(b"%PDF"):
+    # The file is a PDF.
+    pdf_reader = PyPDF2.PdfReader(io.BytesIO(file_content))
+    text = ""
+    for page in pdf_reader.pages:
+      text += page.extract_text()
+  elif file_content.startswith(b"<html"):
+    # The file is a HTML document.
+    text = b"".join(response.text.split(b"\n"))
+  else:
+    # The file is a text file.
+    text = file_content.decode("utf-8")
+
+  return text
+
 def read_pdf(url):
      response = requests.get(url)
     
@@ -261,11 +295,4 @@ class CVranker:
 
           cv_rankings.sort(key=self.sort_func, reverse=True)
           return cv_rankings
-          
-
-
-          
-               
-               
-            
           
