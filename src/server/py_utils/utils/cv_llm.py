@@ -188,7 +188,7 @@ class BaseCVLLM:
           return  sum_score, elements_dict
 
 class CVranker:
-     def __init__(self, cv_links_list, job_title: str, job_description: str) -> None:
+     def __init__(self, cv_links_list: list, job_title: str, job_description: str) -> None:
           self.cvs = [read_pdf(link) for link in cv_links_list]
           self.job_title = job_title,
           self.job_description = job_description 
@@ -235,17 +235,20 @@ class CVranker:
      async def generate_rankings(self):
           review_tasks = []
           scores_contacts = []
-          for cv in self.cv[0]:
-               cv_score_llm  = BaseCVLLM(job_title=self.job_title,
-                                        job_description=self.job_description,
-                                        cv= cv)
-               review_llm = self.build_review_llm()
-               score, elem_dict = await cv_score_llm.generate_concurrently()
-               
-               scores_contacts.append((score,elem_dict['Contact information']))
-               review_tasks.append(self.async_generate_reviews(review_llm, 
-                                                              {"cv": cv}))
-               
+          if self.cvs:
+               for cv in self.cvs:  # Changed from self.cv to self.cvs
+                    cv_score_llm = BaseCVLLM(job_title=self.job_title,
+                                             job_description=self.job_description,
+                                             cv=cv)
+                    review_llm = self.build_review_llm()
+                    score, elem_dict = await cv_score_llm.generate_concurrently()
+
+                    scores_contacts.append((score, elem_dict['Contact information']))
+                    review_tasks.append(self.async_generate_reviews(review_llm,
+                                                                      {"cv": cv}))
+          else:
+               print(self.cvs, "no cv")
+
           summaries = await asyncio.gather(*review_tasks)
 
           cv_rankings = []
