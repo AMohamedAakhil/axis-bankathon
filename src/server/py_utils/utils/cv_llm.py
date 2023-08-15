@@ -27,12 +27,12 @@ def read_pdf(url):
     
      if response.status_code == 200:
         pdf_data = BytesIO(response.content)
-        pdf_reader = PyPDF2.PdfFileReader(pdf_data)
+        pdf_reader = PyPDF2.PdfReader(pdf_data)
         
         all_text = []
-        for page_num in range(pdf_reader.numPages):
-            page = pdf_reader.getPage(page_num)
-            text = page.extractText()
+        for page_num in range(len(pdf_reader.pages)):
+            page = pdf_reader.pages[page_num]
+            text = page.extract_text()
             all_text.append(text)
         
         return '\n'.join(all_text)

@@ -12,47 +12,7 @@ import { evaluateResumes } from './action';
 import CVCard from './CVCard';
 
 const Resume = async () => {
-    var cvs = [
-        `
-        John Doe
-        Address: 123 Main Street, City, State ZIP
-        Phone: (123) 456-7890
-        Email: john.doe@email.com
-        
-       
-        `,
-        `
-        Jane Smith
-        Address: 456 Elm Avenue, Town, State ZIP
-        Phone: (987) 654-3210
-        Email: jane.smith@email.com
-        
-        Summary:
-        Results-oriented marketing professional with a strong background in digital marketing strategies. Skilled in developing and implementing data-driven marketing campaigns that drive engagement and conversions. Proficient in social media management and content creation.
-        
-        Skills:
-        - Digital Marketing
-        - Social Media Management
-        - Data Analysis
-        - Content Creation
-        - Market Research
-        
-        Certifications:
-        - Google Ads Certification
-        - HubSpot Inbound Marketing Certification
-
-        Summary:
-        Dedicated and motivated professional with 5+ years of experience in project management. Proven track record of successfully leading cross-functional teams and delivering projects on time and within budget. Excellent communication and problem-solving skills.
-
-        
-        Skills:
-        - Project Planning and Execution
-        - Team Leadership
-        - Risk Management
-        - Communication
-        - Budgeting and Financial Analysis
-        `
-    ];
+   const cvs = ["https://utfs.io/f/45df0eda-b356-4c3e-bf50-2eefe388b03b_Edited%20Kapton%20Tape.pdf", "https://utfs.io/f/d84ac0ac-8877-470b-b4aa-41f131f899be_oliviabrownresume.pdf"]
     
     const res = await evaluateResumes("Bank Manger", "Manage People", cvs);
     console.log(res);
