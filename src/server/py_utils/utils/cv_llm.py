@@ -171,8 +171,12 @@ class BaseCVLLM:
                template = """
               Your team is evaluating CVs. Your job is to evaluate the {field} in a given CV.
               See how well the provided {field} in this CV in this field is applicable for the job title {job_title}.
+              
               The job description of this post will also be provided to you, Use it as a reference to score the provided field: {field}
-              Based on this, Score the {field} out of 10. If the field has been listed as null, give the score as 0
+
+              Based on this, Score the {field} out of 10. 
+              DO NOT BE LENIENT with the scoring, You are free to give a low score if you feel like the provided {field} is not good.
+              If the field has been listed as null, give the score as 0
               You are allowed to use decimal values, Return ONLY THE SCORE AND NO OTHER TEXT.
 
               {field} = {field_info}. 
@@ -217,9 +221,13 @@ class BaseCVLLM:
 
           results = await asyncio.gather(*tasks)
           results  = [float(i) for  i in results]
+          element_wise_score = {}
+          
+          for score, element in zip(results,elements_dict.keys()):
+              element_wise_score[element] = score
 
           sum_score = sum(results)
-          return  sum_score, elements_dict
+          return  sum_score, elements_dict, element_wise_score
 
 class CVranker:
      def __init__(self, cv_links_list: list, job_title: str, job_description: str) -> None:
@@ -260,7 +268,7 @@ class CVranker:
 
      async def async_generate_scores(self, cv_llm):
           score, elements_dict = await cv_llm.generate_concurrently()
-          return score, elements_dict['Contact information']
+          return score, elements_dict['Contact Information']
      
      async def async_generate_reviews(self, review_llm, inputs):
           resp = await review_llm.arun(inputs)
@@ -275,9 +283,9 @@ class CVranker:
                                              job_description=self.job_description,
                                              cv=cv)
                     review_llm = self.build_review_llm()
-                    score, elem_dict = await cv_score_llm.generate_concurrently()
+                    score, elem_dict, element_wise_score= await cv_score_llm.generate_concurrently()
 
-                    scores_contacts.append((score, elem_dict['Contact information']))
+                    scores_contacts.append((score, elem_dict['Contact Information'], element_wise_score))
                     review_tasks.append(self.async_generate_reviews(review_llm,
                                                                       {"cv": cv}))
           else:
@@ -290,9 +298,71 @@ class CVranker:
                cv_info = {}
                cv_info['score'] = result[0]
                cv_info['contact_info'] = result[1]
+               cv_info['element_wise_score'] = result[2]
                cv_info['short_summary'] = summaries[num]
                cv_rankings.append(cv_info)
 
           cv_rankings.sort(key=self.sort_func, reverse=True)
           return cv_rankings
+     
+cvr = CVranker(
+    job_title = "bank manager",
+    job_description= """
+
+Position: Bank Manager
+Department: Branch Operations
+Location: Bangalore, India
+Reports To: Regional Manager or Area Director
+
+Job Summary:
+The Bank Manager is responsible for overseeing the daily operations of a bank branch, ensuring exceptional customer service, effective financial management, and compliance with regulatory standards. They lead a team of banking professionals, drive business growth, and maintain a positive branch image within the community.
+
+Key Responsibilities:
+
+Team Leadership:
+Lead, mentor, and manage a team of banking staff, including tellers, customer service representatives, loan officers, and other roles.
+Provide guidance, training, and performance evaluations to ensure staff's professional development and efficient operation of the branch.
+Customer Service:
+Ensure exceptional customer service by setting high service standards for the branch.
+Address customer inquiries, complaints, and concerns, striving to resolve issues promptly and satisfactorily.
+Financial Management:
+Monitor and manage branch financial performance, including deposits, loans, profitability, and cost control.
+Develop strategies to meet branch-specific targets for deposits, loans, and revenue generation.
+Sales and Business Development:
+Identify business growth opportunities within the branch's market and develop strategies to attract new customers and increase existing customer engagement.
+Cross-sell banking products and services, such as loans, credit cards, investment products, and insurance.
+Operational Compliance:
+Ensure that the branch operates in compliance with all regulatory and internal policies and procedures.
+Conduct regular audits to assess and address any operational risks and maintain accurate records.
+Risk Management:
+Assess and manage risks associated with the branch's operations, including credit risk, fraud prevention, and security measures.
+Implement security protocols to safeguard both physical assets and digital information.
+Community Engagement:
+Foster positive relationships within the local community to enhance the bank's reputation and visibility.
+Represent the bank at community events, seminars, and networking opportunities.
+Performance Reporting:
+Prepare and present regular reports on branch performance, including financial metrics, customer satisfaction, and business growth.
+Staff Development:
+Identify training needs within the team and provide ongoing training to enhance employees' skills and knowledge.
+Facilitate team-building activities and encourage a positive work environment.
+Qualifications:
+
+Bachelor's degree in finance, business administration, or a related field (Master's degree preferred).
+Several years of progressive experience in banking, including roles in customer service, sales, and leadership.
+Strong knowledge of banking products, services, regulations, and industry trends.
+Excellent communication, interpersonal, and problem-solving skills.
+Proven leadership abilities with a track record of managing and motivating teams.
+Attention to detail, analytical thinking, and ability to make sound financial decisions.
+Proficiency in using banking software and technology for operations and reporting.
+Working Conditions:
+
+The Bank Manager primarily works in a professional office environment within a bank branch. They may also need to attend off-site meetings, community events, and training sessions. The role typically involves working during regular business hours, but may require occasional overtime based on operational needs.
+
+Note: The above job description is a general overview of the responsibilities and qualifications expected of a Bank Manager. Actual job descriptions may vary based on the specific bank, location, and organizational structur
+""",
+cv_links_list=["https://uploadthing.com/f/0b9ba010-d81d-48ff-9097-ed604685e6c7_bankmanager1.pdf","https://uploadthing.com/f/9a128f8b-0b49-4f61-8999-ef8cbd20addc_bankmanager2.pdf","https://uploadthing.com/f/4db20476-e3a4-4dc3-a6af-b86a0240ee04_bankmanager3.pdf","https://uploadthing.com/f/6887fc9e-b4b8-41d7-9824-63f8edb39229_bankmanager4.pdf","https://uploadthing.com/f/2ae46f6b-5e0c-4b5b-be3c-f0d5c73fcb35_bankmanager6.pdf","https://uploadthing.com/f/55aea82e-c77f-4eba-ae58-a5616921c8a5_bankmanager7.pdf"
+]
+)
+
+print(asyncio.run(cvr.generate_rankings()))
           
