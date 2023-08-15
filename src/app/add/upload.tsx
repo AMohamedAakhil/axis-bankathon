@@ -1,46 +1,52 @@
-import { utapi } from "uploadthing/server";
+import React, { useState } from "react";
 import { redirect } from "next/navigation";
-import { InsertData } from "@/server/utils";
 import { currentUser } from "@clerk/nextjs";
 import UploadButton from "./UploadButton";
+import { InsertData } from "@/server/utils";
 import { GetData } from "@/server/utils";
-import Dropzone from "./Dropzone";
+import { utapi } from "uploadthing/server";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
-async function uploadFiles(formData: FormData) {
-  "use server";
-  console.log("uploading");
-  const user = await currentUser();
-  const files: any = formData.getAll("files");
-  const response = await utapi.uploadFiles(files);
-  const dbres = { response, user: user };
-  InsertData("resume", dbres);
-  console.log(dbres);
-  redirect("/");
-}
+function Upload({user} : any) {
+  const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
 
-export default async function Upload() {
-  const jobs = await GetData("jobs");
-  console.log(jobs);
-  return (
-    <form action={uploadFiles} className="">
-      <select className="mt-5 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-3 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-        <option value="" disabled selected>
-          Choose a job title
-        </option>
-        {jobs.map((job: any) => {
-          if (job.title) {
-            // Check if title is not empty
-            return (
-              <option key={job.title} value={job.title}>
-                {job.title}
-              </option>
-            );
-          }
-          return null; // Don't render empty titles
-        })}
-      </select>
+  async function uploadFiles() {
+    console.log("uploading");
+    const user = await currentUser();
+    const filesArray = Array.from(selectedFiles!);
+    const formData = new FormData();
     
-        <Dropzone />
+    filesArray.forEach(file => {
+      formData.append("files", file);
+    });
+    
+    const response = await utapi.uploadFiles(filesArray);
+    const dbres = { response, user: JSON.parse(user) };
+    InsertData("resume", dbres);
+    console.log(dbres);
+    redirect("/");
+  }
+
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const fileList = event.target.files;
+    setSelectedFiles(fileList);
+  }
+
+  return (
+    <form onSubmit={event => {
+      event.preventDefault();
+      uploadFiles();
+    }} className="mt-5">
+      <Label htmlFor="fileUpload">Choose files to upload:</Label>
+      <Input
+        id="fileUpload"
+        name="files"
+        type="file"
+        className="text-black"
+        multiple
+        onChange={handleFileChange}
+      />
       <UploadButton
         type="submit"
         className="w-full bg-white text-slate-950 mt-5 hover:bg-slate-300"
@@ -48,3 +54,5 @@ export default async function Upload() {
     </form>
   );
 }
+
+export default Upload;

@@ -10,9 +10,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { v4 as uuidv4 } from 'uuid';
 
 export default async function Home() {
   const data = await GetData("jobs", 100);
+  const uuid = uuidv4();
+  const to = "/createpipeline/" + uuid + "/job";
   const user = await currentUser();
   console.log(user)
   return (
@@ -21,7 +24,7 @@ export default async function Home() {
         <h1 className="text-2xl">Dashboard</h1>
         <RedirectButton
           className="bg-white text-black hover:bg-slate-200"
-          to="/createpipeline/job"
+          to={to}
           text="Create New Pipeline"
         />
       </div>
@@ -33,7 +36,7 @@ export default async function Home() {
               View, create and edit your pipelines here
             </CardDescription>
           </CardHeader>
-          <CardContent className="-mt-10 grid grid-cols-2 gap-4">
+          <CardContent className="-mt-10 grid grid-cols-3 gap-4">
             {data.map((job: any) => {
               if (job.title) {
                 const formattedDescription = job.description.replace(
