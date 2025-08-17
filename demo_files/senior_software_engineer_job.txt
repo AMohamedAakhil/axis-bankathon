@@ -1,0 +1,42 @@
+
+Senior Software Engineer
+San Francisco, CA (Hybrid) | Full-time
+
+ABOUT US:
+We are a fast-growing technology company building innovative solutions for the future of work. Our platform serves millions of users worldwide and we're looking for talented engineers to help us scale.
+
+JOB PURPOSE:
+Lead the development of scalable software solutions and mentor junior developers while contributing to technical architecture decisions.
+
+KEY RESPONSIBILITIES:
+• Design and implement scalable software solutions using modern technologies
+• Lead technical architecture discussions and make key design decisions
+• Mentor junior developers and conduct thorough code reviews
+• Collaborate with product managers to define technical requirements
+• Optimize application performance and ensure high code quality
+• Participate in agile development processes and sprint planning
+
+REQUIREMENTS:
+
+Education:
+• Bachelor's degree in Computer Science, Engineering, or related field (Master's preferred)
+
+Experience:
+• 5+ years of software development experience with proven track record of delivering complex projects
+
+Skills:
+• Strong proficiency in Python, JavaScript, or similar programming languages
+• Experience with modern web frameworks (React, Node.js, Django, Flask)
+• Knowledge of database design and SQL/NoSQL databases
+• Experience with cloud platforms (AWS, GCP, Azure)
+• Understanding of microservices architecture and distributed systems
+• Strong problem-solving skills and attention to detail
+• Excellent communication and teamwork abilities
+
+BENEFITS:
+• Competitive salary and equity package
+• Comprehensive health, dental, and vision insurance
+• Flexible work arrangements and remote options
+• Professional development and conference attendance
+• 401(k) matching and generous PTO
+• Modern office with free meals and snacks
